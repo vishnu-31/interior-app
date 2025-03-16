@@ -75,7 +75,7 @@ export default function Renovate() {
   } = useForm<RenovationInput>({
     defaultValues: {
       prompt: "",
-      renovationType: "interior" as unknown as Option,
+      renovationType: "residential" as unknown as Option,
     },
   });
 
@@ -90,14 +90,14 @@ export default function Renovate() {
       let fileName = roomImage.split("/").pop()
       let fileType = fileName?.split(".").pop()
 
-
-
-      let apiUrl = "https://interior-api.onrender.com"
-      // if (Platform.OS == "android") {
-      //   apiUrl = "http://10.0.2.2:8000"
-      // } else if (Platform.OS == "web") {
-      //   apiUrl = "http://127.0.0.1:8000"
+      // Define apiUrl with a default value
+      let apiUrl = "https://interior-api.onrender.com";
+      // if (Platform.OS === "android") {
+      //   apiUrl = "http://10.0.2.2:8000";
+      // } else if (Platform.OS === "web") {
+      //   apiUrl = "http://127.0.0.1:8000";
       // }
+
       const formData = new FormData();
       const imageBlob = {
         uri: roomImage,
@@ -129,55 +129,59 @@ export default function Renovate() {
       }
 
       const data = await response.json();
-      // Alert.alert('Success', 'Renovation request submitted successfully!');
-      // console.log('Response:', data);
 
       // Download the generated images if they exist in the response
       if (data && Array.isArray(data.data) && data.data.length > 0) {
-        try {
-          const downloadResults = await Promise.all(
-            data.data.map(async (imageUrl: string, index: number) => {
-              // Create a unique filename for each downloaded image
-              const customFilename = `renovated_image_${index}_${new Date().getTime()}.jpg`;
+        // Process all images without a nested try-catch
+        const downloadResults = await Promise.all(
+          data.data.map(async (imageUrl: string, index: number) => {
+            // Create a unique filename for each downloaded image
+            const customFilename = `renovated_image_${index}_${new Date().getTime()}.jpg`;
 
-              if (Platform.OS === 'web') {
-                // For web, we'll need to use a different approach
-                // Create an anchor element to trigger download
-                const link = document.createElement('a');
-                link.href = imageUrl;
-                link.download = customFilename;
-                link.click();
-                return { success: true, path: imageUrl }; // Use the original URL for web
-              } else {
-                // For mobile platforms, use the downloadImageToLocalStorage function
-                const localUri = await downloadImageToLocalStorage(imageUrl, customFilename);
-                return { success: true, path: localUri };
-              }
-            })
-          );
+            if (Platform.OS === 'web') {
+              // For web, we'll need to use a different approach
+              // Create an anchor element to trigger download
+              const link = document.createElement('a');
+              link.href = imageUrl;
+              link.download = customFilename;
+              link.click();
+              return { success: true, path: imageUrl }; // Use the original URL for web
+            } else {
+              // For mobile platforms, use the downloadImageToLocalStorage function
+              const localUri = await downloadImageToLocalStorage(imageUrl, customFilename);
+              return { success: true, path: localUri };
+            }
+          })
+        );
 
-          // console.log('Downloaded images:', downloadResults);
-          let resultingImages = downloadResults.map(element => element.path);
+        let resultingImages = downloadResults.map(element => element.path);
 
-          // Store the images in context
-          setImages(resultingImages);
+        // Store the images in context
+        setImages(resultingImages);
 
-          Alert.alert(
-            'Images Downloaded',
-            `Successfully downloaded ${downloadResults.length} images`,
-          );
-          router.push('/renovated-gallery')
-        } catch (downloadError) {
-          console.error('Error downloading images:', downloadError);
-          Alert.alert('Download Error', 'Failed to download some images');
-        }
-
+        Alert.alert(
+          'Images Downloaded',
+          `Successfully downloaded ${downloadResults.length} images`,
+        );
+        router.push('/renovated-gallery');
       } else {
         console.log('No images found in the response to download');
       }
     } catch (error) {
       console.error('Error:', error);
-      Alert.alert('Error', 'Failed to submit renovation request');
+
+      // Differentiate between different types of errors for better user feedback
+      if (error instanceof Error) {
+        if (error.message.includes('HTTP error')) {
+          Alert.alert('Server Error', 'Failed to connect to renovation service. Please try again later.');
+        } else if (error.message.includes('download') || error.message.includes('image')) {
+          Alert.alert('Download Error', 'Failed to download one or more images. Please try again.');
+        } else {
+          Alert.alert('Error', 'Failed to submit renovation request: ' + error.message);
+        }
+      } else {
+        Alert.alert('Error', 'An unexpected error occurred during the renovation process');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -228,10 +232,7 @@ export default function Renovate() {
               <SelectContent insets={contentInsets} className='w-full'>
                 <SelectGroup>
                   <SelectLabel>Renovation Type</SelectLabel>
-                  <SelectItem label='Interior' value='interior'>
-                    Interior
-                  </SelectItem>
-                  <SelectItem label='Exterior' value='exterior'>
+                  <SelectItem label='Commercial' value='commercial'>
                     Exterior
                   </SelectItem>
                   <SelectItem label='Residential' value='residential'>

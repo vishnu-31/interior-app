@@ -1,21 +1,23 @@
 import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
+import * as Permissions from 'expo-permissions';
 
 /**
  * App directory structure configuration
  */
 export const AppDirectories = {
-  // Root directory for all app data
+  // Root directory for app data (using documentDirectory as our base)
   ROOT: `${FileSystem.documentDirectory}app_data/`,
   
   // Subdirectories for different types of content
-  IMAGES: `${FileSystem.documentDirectory}app_data/images/`,
-  DOCUMENTS: `${FileSystem.documentDirectory}app_data/documents/`,
-  CACHE: `${FileSystem.documentDirectory}app_data/cache/`,
-  TEMP: `${FileSystem.documentDirectory}app_data/temp/`,
+  get IMAGES() { return `${this.ROOT}images/`; },
+  get DOCUMENTS() { return `${this.ROOT}documents/`; },
+  get CACHE() { return `${this.ROOT}cache/`; },
+  get TEMP() { return `${this.ROOT}temp/`; },
   
   // Add more directories as needed
-  // AUDIO: `${FileSystem.documentDirectory}app_data/audio/`,
-  // VIDEO: `${FileSystem.documentDirectory}app_data/video/`,
+  // get AUDIO() { return `${this.ROOT}audio/`; },
+  // get VIDEO() { return `${this.ROOT}video/`; },
 };
 
 /**
@@ -80,8 +82,7 @@ export async function readFile(directory: string, filename: string): Promise<str
   const filePath = getFilePath(directory, filename);
   
   try {
-    const content = await FileSystem.readAsStringAsync(filePath);
-    return content;
+    return await FileSystem.readAsStringAsync(filePath);
   } catch (error) {
     console.error(`Error reading file from ${filePath}:`, error);
     throw error;
@@ -119,8 +120,7 @@ export async function deleteFile(directory: string, filename: string): Promise<v
  */
 export async function listFiles(directory: string): Promise<string[]> {
   try {
-    const result = await FileSystem.readDirectoryAsync(directory);
-    return result;
+    return await FileSystem.readDirectoryAsync(directory);
   } catch (error) {
     console.error(`Error listing files in ${directory}:`, error);
     throw error;
@@ -211,6 +211,74 @@ export async function downloadFile(
     return filePath;
   } catch (error) {
     console.error('Error downloading file:', error);
+    throw error;
+  }
+}
+
+/**
+ * Saves a file to the device's media library (Photos)
+ * @param {string} fileUri - URI of the file to save
+ * @param {string} album - Optional album name to save to
+ * @returns {Promise<string>} - The URI of the saved file in the media library
+ */
+export async function saveToMediaLibrary(fileUri: string, album?: string): Promise<string> {
+  try {
+    // Request permission to access the media library
+    const { status } = await MediaLibrary.requestPermissionsAsync();
+    
+    if (status !== 'granted') {
+      throw new Error('Permission to access media library not granted');
+    }
+    
+    // Save the file to the media library
+    const asset = await MediaLibrary.createAssetAsync(fileUri);
+    
+    // Create album if specified and add asset to it
+    if (album) {
+      const albums = await MediaLibrary.getAlbumAsync(album);
+      let targetAlbum = albums;
+      
+      if (!targetAlbum) {
+        targetAlbum = await MediaLibrary.createAlbumAsync(album, asset, false);
+      } else {
+        await MediaLibrary.addAssetsToAlbumAsync([asset], targetAlbum, false);
+      }
+    }
+    
+    console.log(`File saved to media library: ${asset.uri}`);
+    return asset.uri;
+  } catch (error) {
+    console.error('Error saving file to media library:', error);
+    throw error;
+  }
+}
+
+/**
+ * Downloads a file and saves it to the device's media library
+ * This is an alternative way to "download" files to the device
+ * @param {string} url - The URL to download from
+ * @param {string} [filename] - Optional custom filename
+ * @param {string} [album] - Optional album name to save to
+ * @returns {Promise<string>} - The URI of the saved file in the media library
+ */
+export async function downloadToMediaLibrary(
+  url: string,
+  filename?: string,
+  album?: string
+): Promise<string> {
+  try {
+    // First download to app's temporary directory
+    const tempPath = await downloadFile(url, AppDirectories.TEMP, filename);
+    
+    // Then save to media library
+    const mediaUri = await saveToMediaLibrary(tempPath, album);
+    
+    // Delete the temporary file
+    await FileSystem.deleteAsync(tempPath);
+    
+    return mediaUri;
+  } catch (error) {
+    console.error('Error downloading to media library:', error);
     throw error;
   }
 } 

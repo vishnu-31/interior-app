@@ -72,7 +72,9 @@ const ImageEditor = () => {
         method: 'POST',
         body: formData,
         headers: {
-          'Content-Type': 'multipart/form-data',
+          // Remove the explicit Content-Type header for multipart/form-data
+          // The browser will automatically set the correct Content-Type with boundary
+          // 'Content-Type': 'multipart/form-data',
         },
       });
 
@@ -130,13 +132,11 @@ const ImageEditor = () => {
       } else {
         console.log('No images found in the response to download');
       }
-
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'Failed to submit Furniture Placement request');
     }
-
-  }
+  };
 
   // Create pan responder for dragging the overlay
   const panResponder = useRef(
