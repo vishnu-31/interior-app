@@ -10,6 +10,7 @@ import { Platform } from 'react-native';
 import { NAV_THEME } from '../lib/constants';
 import { useColorScheme } from '../lib/useColorScheme';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { RenovatedImagesProvider } from '@/lib/RenovatedImagesContext';
 
 const LIGHT_THEME: Theme = {
   ...DefaultTheme,
@@ -50,10 +51,12 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-        <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
-        <Stack>
-          <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-        </Stack>
+        <RenovatedImagesProvider>
+          <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
+          <Stack>
+            <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+          </Stack>
+        </RenovatedImagesProvider>
       </ThemeProvider>
       <PortalHost />
     </SafeAreaProvider>

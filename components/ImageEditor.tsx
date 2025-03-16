@@ -5,21 +5,138 @@ import {
   Animated,
   PanResponder,
   LayoutChangeEvent,
+  Alert,
+  Platform,
 } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useRenovatedImages } from '@/lib/RenovatedImagesContext';
 import Slider from '@react-native-community/slider';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Button } from './ui/button';
 import { Text } from './ui/text';
+import { downloadImageToLocalStorage } from '@/lib/downloadToLocalStorage';
 
 const ImageEditor = () => {
-  const [backgroundImage, setBackgroundImage] = useState(null);
-  const [overlayImage, setOverlayImage] = useState(null);
+  const [overlayImage, setOverlayImage] = useState<string>("");
   const [overlayPosition, setOverlayPosition] = useState({ x: 50, y: 50 });
   const [overlayDimensions, setOverlayDimensions] = useState({ width: 100, height: 100 });
   const [aspectRatio, setAspectRatio] = useState(1); // Default 1:1 aspect ratio
   const [backgroundDimensions, setBackgroundDimensions] = useState({ width: 800, height: 600 });
   const [containerDimensions, setContainerDimensions] = useState({ width: 100, height: 100 });
+
+  const router = useRouter();
+  const { setImages, backgroundImage, setBackgroundImage } = useRenovatedImages();
+
+  const onSubmit = async (
+    inputData: {
+      furniture: { x: number, y: number, w: number, h: number }
+    }) => {
+    try {
+      if (!backgroundImage) {
+        Alert.alert('Error', 'Please select an image for the room');
+        return;
+      }
+
+      let roomFileName = backgroundImage.split("/").pop()
+      let roomFileType = roomFileName?.split(".").pop()
+
+      let furnitureFileName = overlayImage.split("/").pop()
+      let furnitureFileType = furnitureFileName?.split(".").pop()
+
+      let apiUrl = "https://interior-api.onrender.com"
+      // if (Platform.OS == "android") {
+      //   apiUrl = "http://10.0.2.2:8000"
+      // } else if (Platform.OS == "web") {
+      //   apiUrl = "http://127.0.0.1:8000"
+      // }
+
+      const formData = new FormData();
+      const roomImageBlob = {
+        uri: backgroundImage,
+        name: roomFileName,
+        type: `image/${roomFileType}`
+      }
+      const furnitureImageBlob = {
+        uri: overlayImage,
+        name: furnitureFileName,
+        type: `image/${furnitureFileType}`
+      }
+
+      formData.append('roomImage', roomImageBlob as unknown as Blob)
+      formData.append('furnitureImage', furnitureImageBlob as unknown as Blob)
+
+      formData.append("furniture", JSON.stringify(inputData.furniture) as string)
+
+      const response = await fetch(`${apiUrl}/furniturePlace`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Server response:', errorData);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      Alert.alert('Success', 'Furniture Placement request submitted successfully!');
+      console.log('Response:', data);
+
+      // Download the generated images if they exist in the response
+      if (data && Array.isArray(data.data) && data.data.length > 0) {
+        try {
+          const downloadResults = await Promise.all(
+            data.data.map(async (imageUrl: string, index: number) => {
+              // Create a unique filename for each downloaded image
+              const customFilename = `furniture_placed_${index}_${new Date().getTime()}.jpg`;
+
+              if (Platform.OS === 'web') {
+                // For web, we'll need to use a different approach
+                // Create an anchor element to trigger download
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.download = customFilename;
+                link.click();
+                return { success: true, path: imageUrl }; // Use the original URL for web
+              } else {
+                // For mobile platforms, use the downloadImageToLocalStorage function
+                const localUri = await downloadImageToLocalStorage(imageUrl, customFilename);
+                return { success: true, path: localUri };
+              }
+            })
+          );
+
+          // Get the resulting image paths
+          let resultingImages = downloadResults.map(element => element.path);
+
+          // Set images in context
+          setImages(resultingImages);
+
+          Alert.alert(
+            'Images Downloaded',
+            `Successfully downloaded ${downloadResults.length} images`,
+          );
+
+          // Navigate to gallery
+          router.push('/renovated-gallery');
+        } catch (downloadError) {
+          console.error('Error downloading images:', downloadError);
+          Alert.alert('Download Error', 'Failed to download some images');
+        }
+      } else {
+        console.log('No images found in the response to download');
+      }
+
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'Failed to submit Furniture Placement request');
+    }
+
+  }
 
   // Create pan responder for dragging the overlay
   const panResponder = useRef(
@@ -39,12 +156,13 @@ const ImageEditor = () => {
         // Handle dragging
         let newX = overlayPosition.x + dx;
         let newY = overlayPosition.y + dy;
-
+        if (newX < 0) { newX = 0 }
+        if (newY < 0) { newY = 0 }
 
         // Ensure the overlay stays within the container bounds
 
-        newX = Math.min(newX, containerDimensions.width - overlayDimensions.width);
-        newY = Math.min(newY, containerDimensions.height - overlayDimensions.height);
+        // newX = Math.min(newX, containerDimensions.width - overlayDimensions.width);
+        // newY = Math.min(newY, containerDimensions.height - overlayDimensions.height);
         // console.log(`New X: ${newX} dx: ${dx}  New Y: ${newY} dy: ${dy}`)
         setOverlayPosition({ x: newX, y: newY });
         // console.log(`Overlay X: ${overlayPosition.x}  Overlay Y: ${overlayPosition.y}`)
@@ -210,7 +328,18 @@ const ImageEditor = () => {
         </View>
       </View>
 
-      <Button><Text>Submit</Text></Button>
+      <Button
+        onPress={() => onSubmit(
+          {
+            furniture: {
+              x: overlayPosition.x,
+              y: overlayPosition.y,
+              h: overlayDimensions.height,
+              w: overlayDimensions.width
+            }
+          }
+        )}
+      ><Text>Submit</Text></Button>
 
     </View>
   );
