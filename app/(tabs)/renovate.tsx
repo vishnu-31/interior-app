@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Textarea } from '@/components/ui/textarea';
-import { View, Image, Alert, Platform } from 'react-native';
+import { View, Image, Alert, Platform, ScrollView } from 'react-native';
 import * as FileSystem from 'expo-file-system'; // For Expo projects
 
 // Import the downloadImageToLocalStorage function
@@ -190,70 +190,70 @@ export default function Renovate() {
 
   return (
     <SafeAreaView className='pt-4 flex flex-col gap-4'>
-
-      <H1 className='text-center'>Renovate your Interior</H1>
-      <View className='mx-auto flex flex-col gap-3 '>
-        <Button className='mx-auto' onPress={pickImage}><Text>Upload Room Image</Text></Button>
-        {roomImage && <Image source={{ uri: roomImage }} className={`min-w-[80%] object-contain min-h-48`} />}
-      </View>
-
-      <View className='flex flex-col p-4 gap-4 mx-4 items-center'>
-        <Controller
-          control={control}
-          rules={{
-            required: true,
-          }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Textarea
-              placeholder="Describe how you want it to be"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              className='h-48'
-            />
-          )}
-          name="prompt"
-        />
-        {errors.prompt && <Text>This is required.</Text>}
-
-        <Controller
-          control={control}
-          rules={{
-            required: true,
-          }}
-          render={({ field: { onChange, onBlur, value } }) => (
-            <Select value={value as Option} onValueChange={onChange}>
-              <SelectTrigger className='w-full'>
-                <SelectValue
-                  className='text-foreground text-sm native:text-lg'
-                  placeholder='Select a Renovation Type'
-                />
-              </SelectTrigger>
-              <SelectContent insets={contentInsets} className='w-full'>
-                <SelectGroup>
-                  <SelectLabel>Renovation Type</SelectLabel>
-                  <SelectItem label='Commercial' value='commercial'>
-                    Exterior
-                  </SelectItem>
-                  <SelectItem label='Residential' value='residential'>
-                    Residential
-                  </SelectItem>
-
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          )}
-          name="renovationType"
-        />
-        {errors.renovationType && <Text>This is required.</Text>}
-
-        <View className="flex-row space-x-4">
-          <Button className='w-28' disabled={isLoading} onPress={handleSubmit(onSubmit)}>
-            <Text>{isLoading ? 'Processing...' : 'Submit'}</Text>
-          </Button>
+      <ScrollView>
+        <H1 className='text-center'>Renovate your Interior</H1>
+        <View className='mx-auto flex flex-col gap-3 '>
+          <Button className='mx-auto' onPress={pickImage}><Text>Upload Room Image</Text></Button>
+          {roomImage && <Image source={{ uri: roomImage }} className={`min-w-[80%] object-contain min-h-48`} />}
         </View>
-      </View>
 
+        <View className='flex flex-col p-4 gap-4 mx-4 items-center'>
+          <Controller
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Textarea
+                placeholder="Describe how you want it to be"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                className='h-48'
+              />
+            )}
+            name="prompt"
+          />
+          {errors.prompt && <Text>This is required.</Text>}
+
+          <Controller
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <Select value={value as Option} onValueChange={onChange}>
+                <SelectTrigger className='w-full'>
+                  <SelectValue
+                    className='text-foreground text-sm native:text-lg'
+                    placeholder='Select a Renovation Type'
+                  />
+                </SelectTrigger>
+                <SelectContent insets={contentInsets} className='w-full'>
+                  <SelectGroup>
+                    <SelectLabel>Renovation Type</SelectLabel>
+                    <SelectItem label='Commercial' value='commercial'>
+                      Exterior
+                    </SelectItem>
+                    <SelectItem label='Residential' value='residential'>
+                      Residential
+                    </SelectItem>
+
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            )}
+            name="renovationType"
+          />
+          {errors.renovationType && <Text>This is required.</Text>}
+
+          <View className="flex-row space-x-4">
+            <Button className='w-28' disabled={isLoading} onPress={handleSubmit(onSubmit)}>
+              <Text>{isLoading ? 'Processing...' : 'Submit'}</Text>
+            </Button>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

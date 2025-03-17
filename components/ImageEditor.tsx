@@ -230,14 +230,14 @@ const ImageEditor = () => {
   };
 
   return (
-    <View className="flex-1 p-4 bg-gray-100">
+    <View className="flex-1 p-4">
       <View className='flex flex-row m-2 gap-2'>
-        <Button onPress={pickBackgroundImage} className='flex flex-1'>
+        <Button onPress={pickBackgroundImage} variant={"secondary"} className='flex flex-1'>
           <MaterialIcons name="file-upload" size={15} color="#fff" />
           <Text>Background</Text>
         </Button>
 
-        <Button onPress={pickOverlayImage} className='flex flex-1'>
+        <Button onPress={pickOverlayImage} variant={"secondary"} className='flex flex-1'>
           <MaterialIcons name="file-upload" size={15} color="#fff" />
           <Text>Furniture</Text>
         </Button>
@@ -303,7 +303,7 @@ const ImageEditor = () => {
         />
       </View>
 
-      <View className="bg-gray-200 rounded-lg p-4">
+      <View className=" rounded-lg p-4">
         <Text className="text-base font-medium mb-2">Furniture Image Information</Text>
         <View className="flex flex-row flex-wrap">
           <View className="w-1/2 flex flex-row mb-1">
@@ -346,6 +346,7 @@ const ImageEditor = () => {
       </View>
 
       <Button
+        variant={"secondary"}
         onPress={() => onSubmit(
           {
             furniture: {
@@ -364,7 +365,7 @@ const ImageEditor = () => {
         )}
       ><Text>Submit</Text></Button>
 
-    </View>
+    </View >
   );
 };
 

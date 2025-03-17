@@ -1,11 +1,14 @@
 import ImageEditor from "@/components/ImageEditor";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 
 export default function furnitureScreen() {
   return (
-    <View className="flex w-full h-full">
-      <ImageEditor />
-    </View>
+    <SafeAreaView className="flex w-full h-full">
+      <ScrollView>
+        <ImageEditor />
+      </ScrollView>
+    </SafeAreaView>
   )
 }
