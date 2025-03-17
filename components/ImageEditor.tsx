@@ -31,6 +31,7 @@ const ImageEditor = () => {
   const onSubmit = async (
     inputData: {
       furniture: { x: number, y: number, w: number, h: number }
+      area: { x: number, y: number, w: number, h: number }
     }) => {
     try {
       if (!backgroundImage) {
@@ -67,7 +68,7 @@ const ImageEditor = () => {
       formData.append('furnitureImage', furnitureImageBlob as unknown as Blob)
 
       formData.append("furniture", JSON.stringify(inputData.furniture) as string)
-
+      formData.append("area", JSON.stringify(inputData.area) as string)
       const response = await fetch(`${apiUrl}/furniturePlace`, {
         method: 'POST',
         body: formData,
@@ -238,7 +239,7 @@ const ImageEditor = () => {
 
         <Button onPress={pickOverlayImage} className='flex flex-1'>
           <MaterialIcons name="file-upload" size={15} color="#fff" />
-          <Text>Overlay</Text>
+          <Text>Furniture</Text>
         </Button>
       </View>
 
@@ -290,7 +291,7 @@ const ImageEditor = () => {
       </View>
 
       <View className="mb-4">
-        <Text className="text-base font-medium mb-2">Overlay Size</Text>
+        <Text className="text-base font-medium mb-2">Furniture Size</Text>
         <Slider
           className="w-full h-10"
           minimumValue={10}
@@ -303,7 +304,7 @@ const ImageEditor = () => {
       </View>
 
       <View className="bg-gray-200 rounded-lg p-4">
-        <Text className="text-base font-medium mb-2">Overlay Image Information</Text>
+        <Text className="text-base font-medium mb-2">Furniture Image Information</Text>
         <View className="flex flex-row flex-wrap">
           <View className="w-1/2 flex flex-row mb-1">
             <Text className="text-sm mr-1">Position X:</Text>
@@ -322,6 +323,22 @@ const ImageEditor = () => {
             <Text className="text-sm font-medium">{overlayDimensions.height}px</Text>
           </View>
           <View className="w-1/2 flex flex-row mb-1">
+            <Text className="text-sm mr-1">Background Height:</Text>
+            <Text className="text-sm font-medium">{backgroundDimensions.height}px</Text>
+          </View>
+          <View className="w-1/2 flex flex-row mb-1">
+            <Text className="text-sm mr-1">Background Width:</Text>
+            <Text className="text-sm font-medium">{backgroundDimensions.width}px</Text>
+          </View>
+          {/* <View className="w-1/2 flex flex-row mb-1">
+            <Text className="text-sm mr-1">Container Height:</Text>
+            <Text className="text-sm font-medium">{containerDimensions.height}px</Text>
+          </View> */}
+          {/* <View className="w-1/2 flex flex-row mb-1">
+            <Text className="text-sm mr-1">Container Width:</Text>
+            <Text className="text-sm font-medium">{containerDimensions.width}px</Text>
+          </View> */}
+          <View className="w-1/2 flex flex-row mb-1">
             <Text className="text-sm mr-1">Aspect Ratio:</Text>
             <Text className="text-sm font-medium">{aspectRatio.toFixed(3)}</Text>
           </View>
@@ -332,10 +349,16 @@ const ImageEditor = () => {
         onPress={() => onSubmit(
           {
             furniture: {
-              x: overlayPosition.x,
-              y: overlayPosition.y,
-              h: overlayDimensions.height,
-              w: overlayDimensions.width
+              x: overlayPosition.x * (backgroundDimensions.width / containerDimensions.width),
+              y: overlayPosition.y * (backgroundDimensions.height / containerDimensions.height),
+              h: overlayDimensions.height * (backgroundDimensions.height / containerDimensions.height),
+              w: overlayDimensions.width * (backgroundDimensions.width / containerDimensions.width)
+            },
+            area: {
+              x: (overlayPosition.x > 20 ? overlayPosition.x - 20 : overlayPosition.x) * (backgroundDimensions.width / containerDimensions.width),
+              y: (overlayPosition.y > 20 ? overlayPosition.y - 20 : overlayPosition.y) * (backgroundDimensions.height / containerDimensions.height),
+              w: (overlayDimensions.width + overlayPosition.x + 20 < containerDimensions.width ? overlayDimensions.width + overlayPosition.x + 20 : overlayDimensions.width) * (backgroundDimensions.width / containerDimensions.width),
+              h: (overlayDimensions.height + overlayPosition.y + 20 < containerDimensions.height ? overlayDimensions.height + overlayPosition.y + 20 : overlayDimensions.height) * (backgroundDimensions.height / containerDimensions.height),
             }
           }
         )}
