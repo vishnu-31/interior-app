@@ -1,8 +1,8 @@
 import React from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
-import ImageGallery from './image-gallery';
+import ImageGallery from '@/components/ImageGallery';
 import { useRouter } from 'expo-router';
 import { H1 } from '@/components/ui/typography';
 import { useRenovatedImages } from '@/lib/RenovatedImagesContext';
@@ -15,23 +15,25 @@ export default function RenovatedGallery() {
     // console.log("Images in context", images)
     return (
         <SafeAreaView className="flex-1 p-4">
-            <H1 className="text-center mb-4">Your Renovated Spaces</H1>
+            <ScrollView>
+                <H1 className="text-center mb-4">Your Renovated Spaces</H1>
 
 
-            {images.length > 0 ? (
-                <ImageGallery
-                    imageURIs={images}
-                />
-            ) : (
-                <View className="flex-1 justify-center items-center p-4">
-                    <Text className="text-center mb-4">No renovated images found. Create some renovations first!</Text>
-                    <Button onPress={() => router.push('/renovate')}>
-                        <Text>Go to Renovate</Text>
-                    </Button>
-                </View>
+                {images.length > 0 ? (
+                    <ImageGallery
+                        imageURIs={images}
+                    />
+                ) : (
+                    <View className="flex-1 justify-center items-center p-4">
+                        <Text className="text-center mb-4">No renovated images found. Create some renovations first!</Text>
+                        <Button onPress={() => router.push('/renovate')}>
+                            <Text>Go to Renovate</Text>
+                        </Button>
+                    </View>
 
-            )
-            }
+                )
+                }
+            </ScrollView>
         </SafeAreaView>
     );
 

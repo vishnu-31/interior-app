@@ -191,7 +191,7 @@ export default function Renovate() {
   return (
     <SafeAreaView className='pt-4 flex flex-col gap-4'>
       <ScrollView>
-        <H1 className='text-center'>Renovate your Interior</H1>
+        <H1 className='text-center mb-6'>Renovate your Interior</H1>
         <View className='mx-auto flex flex-col gap-3 '>
           <Button className='mx-auto' onPress={pickImage}><Text>Upload Room Image</Text></Button>
           {roomImage && <Image source={{ uri: roomImage }} className={`min-w-[80%] object-contain min-h-48`} />}

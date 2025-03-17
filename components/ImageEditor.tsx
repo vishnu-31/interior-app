@@ -16,6 +16,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Button } from './ui/button';
 import { Text } from './ui/text';
 import { downloadImageToLocalStorage } from '@/lib/downloadToLocalStorage';
+import { H1 } from './ui/typography';
 
 const ImageEditor = () => {
   const [overlayImage, setOverlayImage] = useState<string>("");
@@ -231,6 +232,7 @@ const ImageEditor = () => {
 
   return (
     <View className="flex-1 p-4">
+      <H1 className='text-center my-4'>Furniture Placement</H1>
       <View className='flex flex-row m-2 gap-2'>
         <Button onPress={pickBackgroundImage} variant={"secondary"} className='flex flex-1'>
           <MaterialIcons name="file-upload" size={15} color="#fff" />

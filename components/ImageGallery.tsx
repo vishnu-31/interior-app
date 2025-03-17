@@ -55,6 +55,10 @@ export default function ImageGallery({
                                 setBackgroundImage(uri);
                                 router.navigate("/(tabs)/furniture");
                             }}><Text>Place Furniture</Text></Button>
+                            <Button onPress={() => {
+                                setRoomImage(uri);
+                                router.navigate("/(tabs)/customize");
+                            }}><Text>Transfer Style</Text></Button>
                         </View>
                     </View>
                 ))}

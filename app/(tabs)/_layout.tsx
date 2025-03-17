@@ -2,6 +2,8 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
@@ -37,14 +39,28 @@ export default function TabLayout() {
         name="renovate"
         options={{
           title: 'Renovate',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <MaterialCommunityIcons size={28} name="pencil-outline" color={color} />,
         }}
       />
       <Tabs.Screen
         name="furniture"
         options={{
           title: 'Furnish',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <MaterialCommunityIcons size={28} name="sofa-single" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="customize"
+        options={{
+          title: 'Style transfer',
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="style" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="renovated-gallery"
+        options={{
+          title: 'Gallery',
+          tabBarIcon: ({ color }) => <MaterialCommunityIcons size={28} name="view-gallery" color={color} />,
         }}
       />
     </Tabs>
